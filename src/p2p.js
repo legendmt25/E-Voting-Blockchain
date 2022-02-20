@@ -1,4 +1,3 @@
-const { blockChain } = require('./blockchain');
 const { Server, WebSocket } = require('ws');
 
 const PORT = process.env.wsPORT || 3000;
@@ -87,6 +86,12 @@ const initSocketConnection = (socket) => {
     }
 
     if (obj.type == MessageType.QUERY_TRANSACTION_POOL) {
+      socket.send(
+        JSON.stringify({
+          type: MessageType.RESPONSE_TRANSACTION_POOL,
+          data: JSON.stringify(transactionsPool.getTransactionPool()),
+        })
+      );
     }
 
     if (obj.type == MessageType.RESPONSE_BLOCKCHAIN) {
@@ -119,8 +124,19 @@ const initSocketConnection = (socket) => {
     }
 
     if (obj.type == MessageType.RESPONSE_TRANSACTION_POOL) {
+      const receivedTransactions = parse(obj.data);
+      if (receivedTransactions == null) return;
+      receivedTransactions.forEach((tx) => {
+        transactionsPool.addToTransactionPool(tx, getUTXOs);
+        broadcast({
+          type: MessageType.RESPONSE_TRANSACTION_POOL,
+          data: JSON.stringify(transactionsPool.getTransactionPool()),
+        });
+      });
     }
   });
 };
 
 module.exports = { MessageType, parse, broadcast, connectToPeers, getSockets };
+const { blockChain, Blockchain, getUTXOs } = require('./blockchain');
+const { transactionsPool } = require('./transactionPool');
