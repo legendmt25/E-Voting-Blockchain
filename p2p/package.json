@@ -11,10 +11,12 @@
   "license": "ISC",
   "dependencies": {
     "body-parser": "^1.19.2",
+    "cors": "^2.8.5",
     "crypto-js": "^4.1.1",
     "elliptic": "^6.5.4",
     "express": "^4.17.3",
     "lodash": "^4.17.21",
+    "mongoose": "^6.2.2",
     "ws": "^8.5.0"
   },
   "devDependencies": {

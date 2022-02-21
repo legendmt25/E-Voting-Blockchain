@@ -79,7 +79,6 @@ class Block {
       .map((tx) => tx.txIns)
       .reduce((a, b) => a.concat(b))
       .map((txIn) => new UTXO(txIn.txId, txIn.txIndex, '', 0));
-    console.log(consumedUTXOs);
 
     return UTXOs.filter(
       (utxo) =>

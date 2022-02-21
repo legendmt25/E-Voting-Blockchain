@@ -4,17 +4,18 @@ const path = require('path');
 const { TxIn, Transaction, TxOut } = require('./transaction');
 
 const ec = new ecInstance.ec('secp256k1');
-const privateKeyLocation =
+const PRIVATE_KEY_LOCATION =
   process.env.PRIVATE_KEY || path.join(__dirname, 'wallet/private_key');
 
 class Wallet {
-  constructor() {
-    if (existsSync(privateKeyLocation)) return;
-    writeFileSync(privateKeyLocation, this.generatePrivateKey());
+  constructor(privateKeyLocation) {
+    this.privateKeyLocation = privateKeyLocation;
+    if (existsSync(this.privateKeyLocation)) return;
+    writeFileSync(this.privateKeyLocation, this.generatePrivateKey());
   }
 
   getPrivateKey() {
-    return readFileSync(privateKeyLocation, 'utf-8');
+    return readFileSync(this.privateKeyLocation, 'utf-8');
   }
   getPublicKey() {
     return ec.keyFromPrivate(this.getPrivateKey(), 'hex').getPublic('hex');
@@ -25,8 +26,8 @@ class Wallet {
   }
 
   deleteWallet() {
-    if (!existsSync(privateKeyLocation)) return;
-    unlinkSync(privateKeyLocation);
+    if (!existsSync(this.privateKeyLocation)) return;
+    unlinkSync(this.privateKeyLocation);
   }
 
   getBalance(UTXOs) {
@@ -92,6 +93,6 @@ class Wallet {
   }
 }
 
-const wallet = new Wallet();
+const wallet = new Wallet(PRIVATE_KEY_LOCATION);
 
 module.exports = { Wallet, wallet };

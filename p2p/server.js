@@ -1,3 +1,4 @@
+const cors = require('cors');
 const express = require('express');
 const bodyParser = require('body-parser');
 const { getSockets, connectToPeers } = require('./src/p2p');
@@ -7,6 +8,7 @@ const httpPORT = process.env.PORT || 3001;
 async function startServer() {
   const app = express();
   app.use(bodyParser.json());
+  app.use(cors());
 
   app.use('/blocks', (req, res) => {
     res.status(200).send(blockChain.getChain());
@@ -61,5 +63,5 @@ async function startServer() {
 }
 
 startServer();
-const { blockChain, getUTXOs, Blockchain } = require('./src/blockchain');
+const { blockChain, getUTXOs } = require('./src/blockchain');
 const { transactionsPool } = require('./src/transactionPool');
