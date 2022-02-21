@@ -3,6 +3,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const { getSockets, connectToPeers } = require('./src/p2p');
 const { wallet } = require('./src/wallet');
+const { blockChain, getUTXOs } = require('./src/blockchain');
+const { transactionsPool } = require('./src/transactionPool');
+
 const httpPORT = process.env.PORT || 3001;
 
 async function startServer() {
@@ -12,6 +15,10 @@ async function startServer() {
 
   app.use('/blocks', (req, res) => {
     res.status(200).send(blockChain.getChain());
+  });
+
+  app.post('/block/:id', (req, res) => {
+    res.status(200).send(blockChain.getChain()[parseInt(req.body.id)]);
   });
 
   app.post('/addPeer', (req, res) => {
@@ -63,5 +70,3 @@ async function startServer() {
 }
 
 startServer();
-const { blockChain, getUTXOs } = require('./src/blockchain');
-const { transactionsPool } = require('./src/transactionPool');

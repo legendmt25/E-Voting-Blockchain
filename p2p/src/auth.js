@@ -1,5 +1,0 @@
-class AuthUser {
-    createNewWallet() {
-                
-    }
-}

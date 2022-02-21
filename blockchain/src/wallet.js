@@ -1,7 +1,8 @@
 const ecInstance = require('elliptic');
 const { existsSync, readFileSync, unlinkSync, writeFileSync } = require('fs');
 const path = require('path');
-const { TxIn, Transaction, TxOut } = require('./transaction');
+const { Transaction } = require('./transaction');
+const { TxOut } = require('./txout');
 
 const ec = new ecInstance.ec('secp256k1');
 const PRIVATE_KEY_LOCATION =
@@ -68,6 +69,7 @@ class Wallet {
       amount,
       UTXOs
     );
+
     const txIns = includedUTXOs.map((utxo) => {
       let txIn = new TxIn(utxo.txIndex);
       txIn.txId = utxo.txId;
@@ -96,3 +98,4 @@ class Wallet {
 const wallet = new Wallet(PRIVATE_KEY_LOCATION);
 
 module.exports = { Wallet, wallet };
+const { TxIn } = require('./txin');

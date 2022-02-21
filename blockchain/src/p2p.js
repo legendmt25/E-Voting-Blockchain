@@ -2,32 +2,9 @@ const { Server, WebSocket } = require('ws');
 
 const PORT = process.env.wsPORT || 3000;
 
-const MessageType = Object.freeze({
-  QUERY_LATEST: 0,
-  QUERY_ALL: 1,
-  RESPONSE_BLOCKCHAIN: 2,
-  QUERY_TRANSACTION_POOL: 3,
-  RESPONSE_TRANSACTION_POOL: 4,
-});
-
-const parse = (data) => {
-  try {
-    return JSON.parse(data);
-  } catch (e) {
-    console.log(e);
-    return null;
-  }
-};
-
-const broadcast = (obj) =>
-  sockets.forEach((socket) =>
-    socket.send(
-      JSON.stringify({
-        type: obj.type,
-        data: obj.data,
-      })
-    )
-  );
+const { parse, broadcast, MessageType } = require('./utility');
+const { blockChain, getUTXOs } = require('./blockchain');
+const { transactionsPool } = require('./transactionPool');
 
 const connectToPeers = (newPeer) => {
   const socket = new WebSocket('ws://localhost:3000');
@@ -138,5 +115,3 @@ const initSocketConnection = (socket) => {
 };
 
 module.exports = { MessageType, parse, broadcast, connectToPeers, getSockets };
-const { blockChain, Blockchain, getUTXOs } = require('./blockchain');
-const { transactionsPool } = require('./transactionPool');
