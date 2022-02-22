@@ -5,12 +5,14 @@ const { getSockets, connectToPeers } = require('./src/p2p');
 const { wallet } = require('./src/wallet');
 const { blockChain, getUTXOs } = require('./src/blockchain');
 const { transactionsPool } = require('./src/transactionPool');
+const path = require('path');
 
 const httpPORT = process.env.PORT || 3001;
 
 async function startServer() {
   const app = express();
   app.use(bodyParser.json());
+  app.use(express.static(path.join(__dirname, 'public')));
   app.use(cors());
 
   app.use('/blocks', (req, res) => {
@@ -23,10 +25,11 @@ async function startServer() {
 
   app.post('/addPeer', (req, res) => {
     connectToPeers(req.body.peer);
-    res.send('/peers');
+    res.status(200).send('/peers');
   });
 
   app.get('/peers', (req, res) => {
+    console.log(getSockets());
     res.status(200).send(getSockets());
   });
 
@@ -45,13 +48,13 @@ async function startServer() {
   });
 
   app.post('/mintTransaction', (req, res) => {
-    const address = req.body.address;
-    const amount = parseInt(req.body.amount);
-    if (!address || !amount) {
+    const addresses = req.body.addresses;
+    const votes = req.body.votes;
+    if (!addresses || !votes) {
       res.status(400).send();
       return;
     }
-    res.send(blockChain.sendTransaction(address, amount));
+    res.send(blockChain.sendTransaction(addresses, votes));
   });
 
   app.get('/utxos', (req, res) => {

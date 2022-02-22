@@ -1,9 +1,9 @@
 class UTXO {
-  constructor(txId, txIndex, address, amount) {
+  constructor(txId, txIndex, address, vote) {
     this.txId = txId;
     this.txIndex = txIndex;
     this.address = address;
-    this.amount = amount;
+    this.vote = vote;
   }
 }
 

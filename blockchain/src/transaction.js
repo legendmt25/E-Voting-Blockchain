@@ -1,6 +1,6 @@
 const { SHA256 } = require('crypto-js');
 
-const COIN_BASE_AMMOUNT = 50;
+const BASE_VOTES = 3;
 
 class Transaction {
   constructor(txIns, txOuts) {
@@ -12,25 +12,19 @@ class Transaction {
   getTransactionId() {
     return SHA256(
       this.txIns
-        .map((txIn) => txIn.txOutId + txIn.txOutIndex)
+        .map((txIn) => txIn.txId + txIn.txIndex)
         .reduce((a, b) => a + b, '') +
         this.txOuts
-          .map((txOut) => txOut.address + txOut.amount)
+          .map((txOut) => txOut.address + txOut.vote)
           .reduce((a, b) => a + b, '')
     ).toString();
-  }
-
-  signTxIn(txInIndex, UTXOs) {
-    this.txIns[txInIndex].sign(this, UTXOs);
   }
 
   validate(UTXOs) {
     return (
       this.isStructureValid() &&
       this.getTransactionId() == this.id &&
-      this.txIns.filter((el) => !el.validate(this, UTXOs)).length == 0 &&
-      this.txIns.map((el) => el.getAmount(UTXOs)).reduce((a, b) => a + b) <=
-        this.txOuts.reduce((a, b) => a.amount + b.amount)
+      this.txIns.filter((el) => !el.validate(this, UTXOs)).length == 0
     );
   }
 
@@ -40,7 +34,7 @@ class Transaction {
       this.txIns.length == 1 &&
       this.txOuts.length == 1 &&
       this.txIns[0].txIndex == blockIndex &&
-      this.txOuts[0].amount == COIN_BASE_AMMOUNT
+      this.txOuts[0].vote == BASE_VOTES
     );
   }
 
@@ -56,4 +50,3 @@ class Transaction {
 }
 
 module.exports = { Transaction };
-const { wallet } = require('./wallet');

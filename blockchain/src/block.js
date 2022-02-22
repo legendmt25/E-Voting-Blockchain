@@ -1,3 +1,4 @@
+const { SHA256 } = require('crypto-js');
 const { calculateHashByBlock } = require('./utility');
 const { UTXO } = require('./utxo');
 const MINTING_WITHOUT_COIN_INDEX = 100;
@@ -9,7 +10,7 @@ class Block {
     timestamp,
     data,
     difficulty,
-    minterBalance,
+    minterVotes,
     minterAddress
   ) {
     this.index = index;
@@ -17,21 +18,21 @@ class Block {
     this.timestamp = timestamp;
     this.data = data;
     this.difficulty = difficulty;
-    this.minterBalance = minterBalance;
+    this.minterVotes = minterVotes;
     this.minterAddress = minterAddress;
     this.hash = calculateHashByBlock(this);
   }
 
-  isStructureValid() {
+  static isStructureValid(block = this) {
     return (
-      typeof this.index == 'number' &&
-      typeof this.hash == 'string' &&
-      typeof this.previousHash == 'string' &&
-      typeof this.timestamp == 'number' &&
-      typeof this.data == 'object' &&
-      typeof this.difficulty == 'number' &&
-      typeof this.minterBalance == 'number' &&
-      typeof this.minterAddress == 'string'
+      typeof block.index == 'number' &&
+      typeof block.hash == 'string' &&
+      typeof block.previousHash == 'string' &&
+      typeof block.timestamp == 'number' &&
+      typeof block.data == 'object' &&
+      typeof block.difficulty == 'number' &&
+      typeof block.minterVotes == 'number' &&
+      typeof block.minterAddress == 'string'
     );
   }
 
@@ -51,7 +52,7 @@ class Block {
     const newUTXOs = this.data
       .map((tx) =>
         tx.txOuts.map(
-          (txOut, index) => new UTXO(tx.id, index, txOut.address, txOut.amount)
+          (txOut, index) => new UTXO(tx.id, index, txOut.address, txOut.vote)
         )
       )
       .reduce((a, b) => a.concat(b));
@@ -80,11 +81,11 @@ class Block {
     this.difficulty++;
 
     if (this.index <= MINTING_WITHOUT_COIN_INDEX) {
-      this.minterBalance += 1;
+      this.minterVotes += 1;
     }
 
     const balanceOverDifficulty =
-      (Math.pow(2, 256) * this.minterBalance) / this.difficulty;
+      (Math.pow(2, 256) * this.minterVotes) / this.difficulty;
     const stakingHash = SHA256(
       this.previousHash + this.minterAddress + this.timestamp
     ).toString();

@@ -1,11 +1,11 @@
 class TxOut {
-  constructor(address, amount) {
+  constructor(address, vote) {
     this.address = address;
-    this.amount = amount;
+    this.vote = vote;
   }
 
   isStructureValid() {
-    return typeof this.address == 'string' && typeof this.amount == 'number';
+    return typeof this.address == 'string' && typeof this.vote == 'number';
   }
 }
 

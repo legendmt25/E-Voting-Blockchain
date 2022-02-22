@@ -1,12 +1,19 @@
 import { useEffect, useState } from 'react';
-import { FormControl, InputGroup, Button, Table } from 'react-bootstrap';
+import {
+  FormControl,
+  InputGroup,
+  Button,
+  Table,
+  Form,
+  Image,
+} from 'react-bootstrap';
 import TransactionsPool from './TransactionsPool';
 
 function transformToTableElements(res) {
-  return res.map((utxo) => (
-    <tr key={utxo.txId}>
+  return res.map((utxo, index) => (
+    <tr key={index}>
       {Object.values(utxo).map((el) => (
-        <td>{el}</td>
+        <td key={el}>{el}</td>
       ))}
     </tr>
   ));
@@ -30,38 +37,79 @@ export default function Wallet() {
       .then((res) => (res ? setUTXOs(transformToTableElements(res)) : null));
   }, []);
 
-  let obj = { receiver: '', amount: 0 };
-  const handleChange = (event, element) => {
-    event.preventDefault();
-    obj[element] = event.target.value;
+  let obj = {
+    receiver1:
+      '0427f704c8f2c812742848d20de7e6109ecfdabcfa97551424ac732129762cfb4283f204b7b349177e539b31a0a6cf3e06b85ac38f21be11ff51df9475685076f0',
+    receiver2:
+      '0427f704c8f2c812742848d20de7e6109ecfdabcfa97551424ac732129762cfb4283f204b7b349177e539b31a0a6cf3e06b85ac38f21be11ff51df9475685076f0',
+    receiver3:
+      '0427f704c8f2c812742848d20de7e6109ecfdabcfa97551424ac732129762cfb4283f204b7b349177e539b31a0a6cf3e06b85ac38f21be11ff51df9475685076f0',
+
+    vote0: false,
+    vote1: false,
+    vote2: false,
   };
+  const handleChange = (value, element) => (obj[element] = value);
 
   async function sendTransaction() {
     fetch('http://localhost:3001/mintTransaction', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        address: obj.receiver,
-        amount: obj.amount,
+        addresses: [obj.receiver1, obj.receiver2, obj.receiver3],
+        votes: [obj.vote0, obj.vote1, obj.vote2],
       }),
     });
   }
 
+  const imgStyle = {
+    objectFit: 'contain',
+    height: 200,
+    width: 200,
+  };
+
   return (
     <div className="row d-flex flex-column align-items-center">
       <div className="mt-3 col-md-7">
-        <InputGroup className="mb-3 shadow-sm">
-          <InputGroup.Text>Receiver</InputGroup.Text>
-          <FormControl
-            onChange={(event) => handleChange(event, 'receiver')}
-          ></FormControl>
-        </InputGroup>
-        <InputGroup className="mb-3 shadow-sm">
-          <InputGroup.Text>Amount</InputGroup.Text>
-          <FormControl
-            onChange={(event) => handleChange(event, 'amount')}
-          ></FormControl>
-        </InputGroup>
+        <div className="d-flex">
+          <InputGroup className="mb-3">
+            <Image
+              src="http://localhost:3001/person1.jpg"
+              roundedCircle
+              thumbnail
+              style={imgStyle}
+            />
+            <Form.Check
+              onChange={(event) => handleChange(event.target.checked, 'vote0')}
+              label="vote"
+            />
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <Image
+              src="http://localhost:3001/person2.jpg"
+              roundedCircle
+              thumbnail
+              style={imgStyle}
+            ></Image>
+            <Form.Check
+              onChange={(event) => handleChange(event.target.checked, 'vote1')}
+              label="vote"
+            />
+          </InputGroup>
+          <InputGroup className="mb-3">
+            <Image
+              src="http://localhost:3001/person3.avif"
+              roundedCircle
+              thumbnail
+              style={imgStyle}
+            ></Image>
+            <Form.Check
+              onChange={(event) => handleChange(event.target.checked, 'vote2')}
+              label="vote"
+            />
+          </InputGroup>
+        </div>
+
         <Button className="shadow-sm" onClick={sendTransaction}>
           Send
         </Button>

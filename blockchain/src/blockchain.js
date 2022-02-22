@@ -4,7 +4,12 @@ const { Transaction } = require('./transaction');
 const { TxIn } = require('./txin');
 const { TxOut } = require('./txout');
 const { wallet } = require('./wallet');
-const { broadcast, MessageType, coinbaseTransaction } = require('./utility');
+const {
+  broadcast,
+  MessageType,
+  coinbaseTransaction,
+  calculateHashByBlock,
+} = require('./utility');
 
 const BLOCK_GENERATION_INTERVAL = 10;
 const DIFFICULTY_ADJUSTMENT_INTERVAL = 10;
@@ -16,7 +21,7 @@ class Blockchain {
   genesisBlock() {
     const genesisTransaction = new Transaction(
       [new TxIn(0)],
-      [new TxOut(wallet.getPublicKey(), 50)]
+      [new TxOut(wallet.getPublicKey(), 3)]
     );
 
     return new Block(
@@ -121,7 +126,7 @@ class Blockchain {
       Date.now(),
       data,
       this.getDiffucilty(),
-      wallet.getBalance(getUTXOs()),
+      0,
       wallet.getPublicKey()
     );
     if (this.addBlockToChain(block) && block.isBlockStakingValid()) {
@@ -145,25 +150,26 @@ class Blockchain {
     );
   }
 
-  generateNextBlockWithTransactions(receiverAddress, amount) {
+  generateNextBlockWithTransactions(receiverAddress, vote) {
     return this.generateRawNextBlock([
       coinbaseTransaction(wallet.getPublicKey(), this.getLastBlock().index + 1),
       wallet.createTransaction(
         receiverAddress,
-        amount,
+        vote,
         getUTXOs(),
         transactionsPool.getTransactionPool()
       ),
     ]);
   }
 
-  sendTransaction(receiverAddress, amount) {
+  sendTransaction(receiverAddress, votes) {
     const tx = wallet.createTransaction(
       receiverAddress,
-      amount,
+      votes,
       getUTXOs(),
       transactionsPool.getTransactionPool()
     );
+
     transactionsPool.addToTransactionPool(tx, getUTXOs());
     broadcast({
       type: MessageType.RESPONSE_TRANSACTION_POOL,
@@ -180,4 +186,4 @@ let UTXOs = blockChain.chain[0].processTransactions([]);
 const setUTXOs = (newUTXOs) => (UTXOs = newUTXOs);
 const getUTXOs = () => JSON.parse(JSON.stringify(UTXOs));
 
-module.exports = { Block, Blockchain, blockChain, getUTXOs };
+module.exports = { Blockchain, blockChain, getUTXOs };

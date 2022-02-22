@@ -1,7 +1,6 @@
 const ecInstance = require('elliptic');
 const ec = new ecInstance.ec('secp256k1');
 
-const { wallet } = require('./wallet');
 class TxIn {
   constructor(index) {
     this.txId = '';
@@ -30,10 +29,6 @@ class TxIn {
     );
   }
 
-  getAmount(UTXOs) {
-    return this.findUTXO(UTXOs).amount;
-  }
-
   sign(tx, UTXOs) {
     const foundUTXO = this.findUTXO(UTXOs);
     if (
@@ -49,3 +44,4 @@ class TxIn {
 }
 
 module.exports = { TxIn };
+const { wallet } = require('./wallet');

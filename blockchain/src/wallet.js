@@ -3,6 +3,7 @@ const { existsSync, readFileSync, unlinkSync, writeFileSync } = require('fs');
 const path = require('path');
 const { Transaction } = require('./transaction');
 const { TxOut } = require('./txout');
+const { TxIn } = require('./txin');
 
 const ec = new ecInstance.ec('secp256k1');
 const PRIVATE_KEY_LOCATION =
@@ -31,12 +32,6 @@ class Wallet {
     unlinkSync(this.privateKeyLocation);
   }
 
-  getBalance(UTXOs) {
-    return UTXOs.filter((utxo) => utxo.address == this.getPublicKey())
-      .map((utxo) => utxo.amount)
-      .reduce((a, b) => a + b, 0);
-  }
-
   filterTxPoolIns(UTXOs, transactionsPool) {
     const txIns = transactionsPool.map((tx) => tx.txIns).flat();
     return UTXOs.filter(
@@ -51,22 +46,22 @@ class Wallet {
     return UTXOs.filter((utxo) => utxo.address == this.getPublicKey());
   }
 
-  findTxOutsForAmount(amount, UTXOs) {
+  findTxOutsForAmount(votesNumber, UTXOs) {
     const myUTXOs = this.getWalletUTXOs(UTXOs);
-    let currentAmount = 0;
+    let currentVotes = 0;
     const includedUTXOs = [];
     myUTXOs.forEach((utxo) => {
       includedUTXOs.push(utxo);
-      currentAmount += utxo.amount;
-      if (currentAmount + utxo.amount > amount) return;
+      currentVotes += utxo.vote;
+      if (currentVotes >= votesNumber) return;
     });
-    return { includedUTXOs, leftAmount: currentAmount - amount };
+    return { includedUTXOs, leftVotes: currentVotes - votesNumber };
   }
 
-  createTransaction(receiverAddress, amount, UTXOs, txPool) {
+  createTransaction(receiverAddresses, votes, UTXOs, txPool) {
     const filtered = this.filterTxPoolIns(UTXOs, txPool);
-    const { includedUTXOs, leftAmount } = this.findTxOutsForAmount(
-      amount,
+    const { includedUTXOs, leftVotes } = this.findTxOutsForAmount(
+      votes.length,
       UTXOs
     );
 
@@ -78,24 +73,26 @@ class Wallet {
 
     const tx = new Transaction(
       txIns,
-      this.createTxOuts(receiverAddress, amount, leftAmount)
+      this.createTxOuts(receiverAddresses, votes, leftVotes)
     );
     tx.txIns.forEach((txIn) => (txIn.signiture = txIn.sign(tx, UTXOs)));
     return tx;
   }
 
-  createTxOuts(receiverAddress, amount, leftAmount) {
-    if (leftAmount == 0) {
-      return [new TxOut(receiverAddress, amount)];
+  createTxOuts(receiverAddresses, votes, leftVotes) {
+    let txOuts = [];
+    for (let i = 0; i < votes.length; ++i) {
+      if (votes[i]) {
+        txOuts.push(new TxOut(receiverAddresses[i], Number(votes[i])));
+      }
     }
-    return [
-      new TxOut(receiverAddress, amount),
-      new TxOut(this.getPublicKey(), leftAmount),
-    ];
+    if (leftVotes != 0) {
+      txOuts.push(new TxOut(wallet.getPublicKey(), leftVotes));
+    }
+    return txOuts;
   }
 }
 
 const wallet = new Wallet(PRIVATE_KEY_LOCATION);
 
 module.exports = { Wallet, wallet };
-const { TxIn } = require('./txin');

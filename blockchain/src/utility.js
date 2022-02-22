@@ -1,7 +1,9 @@
 const { SHA256 } = require('crypto-js');
-const { TxIn, TxOut, Transaction } = require('./transaction');
+const { TxIn } = require('./txin');
+const { TxOut } = require('./txout');
+const { Transaction } = require('./transaction');
 
-const COIN_BASE_AMMOUNT = 50;
+const BASE_VOTES = 3;
 
 const MessageType = Object.freeze({
   QUERY_LATEST: 0,
@@ -13,7 +15,7 @@ const MessageType = Object.freeze({
 
 function coinbaseTransaction(address, blockIndex) {
   const txIn = new TxIn(blockIndex);
-  return new Transaction([txIn], [new TxOut(address, COIN_BASE_AMMOUNT)]);
+  return new Transaction([txIn], [new TxOut(address, BASE_VOTES)]);
 }
 
 const calculateHashByBlock = (block) => {
@@ -38,14 +40,16 @@ const parse = (data) => {
 };
 
 const broadcast = (obj) =>
-  sockets.forEach((socket) =>
-    socket.send(
-      JSON.stringify({
-        type: obj.type,
-        data: obj.data,
-      })
-    )
-  );
+  require('./p2p.js')
+    .getSockets()
+    .forEach((socket) =>
+      socket.send(
+        JSON.stringify({
+          type: obj.type,
+          data: obj.data,
+        })
+      )
+    );
 
 module.exports = {
   coinbaseTransaction,

@@ -15,7 +15,7 @@ export default function Block() {
     })
       .then((res) => res.json())
       .then((res) => setBlock(res));
-  }, []);
+  }, [id]);
 
   const transactions = (transactions) =>
     transactions
@@ -26,9 +26,9 @@ export default function Block() {
               <div className="w-50 text-break">
                 {tx.txIns.map((txIn, index) => (
                   <div key={index} className="d-flex flex-column">
-                    <span>TxId: {txIn.txId}</span>
-                    <span>TxIndex: {txIn.txIndex}</span>
-                    <span>TxSignature: {txIn.signiture}</span>
+                    <span>id: {txIn.txId}</span>
+                    <span>index: {txIn.txIndex}</span>
+                    <span>signiture: {txIn.signiture}</span>
                   </div>
                 ))}
               </div>
@@ -36,7 +36,7 @@ export default function Block() {
                 {tx.txOuts.map((txOut, index) => (
                   <div key={index} className="d-flex flex-column">
                     <span>address: {txOut.address}</span>
-                    <span>amount: {txOut.amount}</span>
+                    <span>vote: {txOut.vote}</span>
                   </div>
                 ))}
               </div>

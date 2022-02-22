@@ -1,13 +1,12 @@
 const { Server, WebSocket } = require('ws');
 
-const PORT = process.env.wsPORT || 3000;
-
-const { parse, broadcast, MessageType } = require('./utility');
 const { blockChain, getUTXOs } = require('./blockchain');
 const { transactionsPool } = require('./transactionPool');
+const { Block } = require('./block');
+const { MessageType, parse } = require('./utility');
 
 const connectToPeers = (newPeer) => {
-  const socket = new WebSocket('ws://localhost:3000');
+  const socket = new WebSocket(newPeer);
   socket.on('open', () => initSocketConnection(socket));
   socket.on('error', () => {
     console.log('error');
@@ -18,8 +17,9 @@ const connectToPeers = (newPeer) => {
 const sockets = [];
 const getSockets = () => sockets;
 
-const server = new Server({ port: PORT }, () =>
-  console.log(`WebSocket P2P listening on ${PORT}`)
+const wsPORT = process.env.wsPORT || 4000;
+const server = new Server({ port: wsPORT }, () =>
+  console.log(`WebSocket P2P listening on ${wsPORT}`)
 );
 server.on('connection', (socket) => {
   initSocketConnection(socket);
@@ -78,7 +78,7 @@ const initSocketConnection = (socket) => {
 
       const lastBlockReceived = receivedBlocks[receivedBlocks.length - 1];
       const lastBlockHeld = blockChain.getLastBlock();
-      if (!blockChain.isBlockStructureValid(lastBlockReceived)) {
+      if (!Block.isStructureValid(lastBlockReceived)) {
         console.log('ivalid block structure');
       }
 
@@ -114,4 +114,4 @@ const initSocketConnection = (socket) => {
   });
 };
 
-module.exports = { MessageType, parse, broadcast, connectToPeers, getSockets };
+module.exports = { connectToPeers, getSockets };

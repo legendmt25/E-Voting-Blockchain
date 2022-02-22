@@ -19,17 +19,17 @@ class TransactionPool {
     );
   }
 
-  addToTransactionPool(transaction, UTXOs) {
-    if (!transaction.validate(UTXOs)) {
+  addToTransactionPool(tx, UTXOs) {
+    if (!tx.validate(UTXOs)) {
       console.log('addToTransactionPool1');
       return;
     }
-    if (!this.isTxForPoolValid(transaction)) {
+    if (!this.isTxForPoolValid(tx)) {
       console.log('addToTransactionPool2');
       return;
     }
 
-    this.transactionsPool.push(transaction);
+    this.transactionsPool.push(tx);
   }
 
   updateTransactionPool(UTXOs) {
